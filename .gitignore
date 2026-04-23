@@ -1,0 +1,12 @@
+# backend
+backend/venv/
+backend/db.sqlite3
+backend/.env
+
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# system
+.DS_Store
