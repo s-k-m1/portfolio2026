@@ -29,6 +29,7 @@ if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',  
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'portfolio',
     'accounts',
+    'jazzmin', 
 ]
 
 MIDDLEWARE = [
