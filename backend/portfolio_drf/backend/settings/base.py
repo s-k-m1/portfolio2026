@@ -7,29 +7,40 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# 1. CORE SECURITY
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise Exception("SECRET_KEY is missing in environment variables")
 
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-# Helper to safely parse comma-separated environment variables
+# 2. NETWORKING & CORS LOGIC
 def get_env_list(var_name, default_val):
     raw_val = os.getenv(var_name, default_val)
     return [item.strip() for item in raw_val.split(",") if item.strip()]
 
 ALLOWED_HOSTS = get_env_list("ALLOWED_HOSTS", "127.0.0.1,localhost")
-CORS_ALLOWED_ORIGINS = get_env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
-CSRF_TRUSTED_ORIGINS = get_env_list("CSRF_TRUSTED_ORIGINS", "http://localhost:5173")
+CORS_ALLOWED_ORIGINS = get_env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+CSRF_TRUSTED_ORIGINS = get_env_list("CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 
-# Auto-include Render's dynamic hostname
+# Auto-include Render hostnames
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
+    render_url = f"https://{RENDER_EXTERNAL_HOSTNAME}"
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+    if render_url not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(render_url)
+    if render_url not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_url)
 
+# Development Bypass: If you still face CORS issues locally, this ensures DEBUG mode works
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True 
+
+# 3. APPS & MIDDLEWARE
 INSTALLED_APPS = [
-    'whitenoise.runserver_nostatic',  
+    'jazzmin',  # Must be above admin
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,22 +51,21 @@ INSTALLED_APPS = [
     'rest_framework',
     'portfolio',
     'accounts',
-    'jazzmin', 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Position is critical
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Fail-safe Database: Use SQLite locally if DATABASE_URL is missing
+# 4. DATABASE
 DATABASES = {
     "default": dj_database_url.config(
         default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3"),
@@ -64,15 +74,18 @@ DATABASES = {
     )
 }
 
+# 5. SECURITY SETTINGS FOR PRODUCTION
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# 6. STATIC & MEDIA FILES
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# Use non-manifest storage for better compatibility with Jazzmin/Admin icons
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kathmandu'
