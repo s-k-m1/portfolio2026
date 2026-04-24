@@ -1,5 +1,5 @@
-from pathlib import Path
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
@@ -13,22 +13,20 @@ if not SECRET_KEY:
 
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-# 2. NETWORKING
-# Splits environment strings into lists; provides local fallbacks
-ALLOWED_HOSTS = os.getenv(
-    "ALLOWED_HOSTS", 
-    "127.0.0.1,localhost,portfolio2026-buti.onrender.com,saroj01.com.np"
-).split(",")
+# Helper to safely parse comma-separated environment variables
+def get_env_list(var_name, default_val):
+    raw_val = os.getenv(var_name, default_val)
+    return [item.strip() for item in raw_val.split(",") if item.strip()]
 
-CORS_ALLOWED_ORIGINS = os.getenv(
-    "CORS_ALLOWED_ORIGINS", 
-    "http://localhost:5173,https://saroj01.com.np,https://portfolio2026-buti.onrender.com"
-).split(",")
+ALLOWED_HOSTS = get_env_list("ALLOWED_HOSTS", "127.0.0.1,localhost")
+CORS_ALLOWED_ORIGINS = get_env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
+CSRF_TRUSTED_ORIGINS = get_env_list("CSRF_TRUSTED_ORIGINS", "http://localhost:5173")
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS", 
-    "https://portfolio2026-buti.onrender.com,https://saroj01.com.np"
-).split(",")
+# Auto-include Render's dynamic hostname
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -45,7 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware", # For static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -55,11 +53,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Fail-safe Database: Use SQLite locally if DATABASE_URL is missing
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
+        default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3"),
         conn_max_age=600,
-        ssl_require=True if not DEBUG else False # Require SSL in prod
+        ssl_require=not DEBUG
     )
 }
 
