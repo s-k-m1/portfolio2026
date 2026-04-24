@@ -8,15 +8,16 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
         "ALLOWED_HOSTS",
-        "127.0.0.1,localhost,portfolio2026-buti.onrender.com"
+        "127.0.0.1,localhost,.onrender.com"
     ).split(",")
     if host.strip()
 ]
 
 DATABASES = {
-    "default": dj_database_url.parse(
-        os.getenv("DATABASE_URL"),
-        conn_max_age=600
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
     )
 }
 
@@ -28,11 +29,13 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
     "https://saroj01.com.np",
-    "https://portfolio2026-buti.onrender.com"
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "https://saroj01.com.np",
-    "https://portfolio2026-buti.onrender.com"
+    "https://portfolio2026-buti.onrender.com",
 ]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
