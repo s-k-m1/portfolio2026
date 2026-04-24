@@ -5,12 +5,8 @@ from .base import *
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv(
-        "ALLOWED_HOSTS",
-        "127.0.0.1,localhost,.onrender.com"
-    ).split(",")
-    if host.strip()
+    "portfolio2026-buti.onrender.com",
+    "saroj01.com.np",
 ]
 
 DATABASES = {
@@ -29,13 +25,13 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://*.onrender.com",
+    "https://portfolio2026-buti.onrender.com",
     "https://saroj01.com.np",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "https://saroj01.com.np",
+CSRF_TRUSTED_ORIGINS = [
     "https://portfolio2026-buti.onrender.com",
+    "https://saroj01.com.np",
 ]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

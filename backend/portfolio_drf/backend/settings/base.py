@@ -101,7 +101,7 @@ CORS_ALLOWED_ORIGINS = os.getenv(
     "http://localhost:5173"
 ).split(",")
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
+CCSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
-    "http://localhost:5173"
+    "https://your-backend.onrender.com"
 ).split(",")
