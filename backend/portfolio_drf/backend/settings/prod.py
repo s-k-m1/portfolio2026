@@ -2,12 +2,12 @@ import os
 import dj_database_url
 from .base import *
 
-DEBUG = False
+SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = [
-    "portfolio2026-buti.onrender.com",
-    "saroj01.com.np",
-]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 
 DATABASES = {
     "default": dj_database_url.config(
@@ -20,18 +20,9 @@ DATABASES = {
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://portfolio2026-buti.onrender.com",
-    "https://saroj01.com.np",
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://portfolio2026-buti.onrender.com",
-    "https://saroj01.com.np",
-]
-
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
